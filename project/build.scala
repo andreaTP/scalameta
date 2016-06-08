@@ -8,6 +8,9 @@ import UnidocKeys._
 import java.io._
 import org.scalameta.os._
 import scala.compat.Platform.EOL
+import org.scalajs.sbtplugin.ScalaJSPlugin
+import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
+import org.scalajs.sbtplugin.cross.CrossProject
 
 object build extends Build {
   lazy val ScalaVersions = Seq("2.11.8")
@@ -25,7 +28,7 @@ object build extends Build {
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject,
     aggregate in test := false,
     test := {
-      val runTests = (test in scalameta in Test).value
+      //val runTests = (test in scalameta in Test).value
       val runDocs = (run in readme in Compile).toTask(" --validate").value
     },
     publish := {
@@ -34,24 +37,29 @@ object build extends Build {
     },
     // TODO: The same thing for publishSigned doesn't work.
     // SBT calls publishSigned on aggregated projects, but ignores everything else.
-    console := (console in scalameta in Compile).value
+    console := (console in scalametaJVM in Compile).value
   ) aggregate (
-    common,
-    dialects,
-    inline,
-    inputs,
-    parsers,
-    quasiquotes,
-    scalameta,
-    tokenizers,
-    tokens,
-    transversers,
-    trees
+    commonJVM,
+    dialectsJVM,
+    inlineJVM,
+    inputsJVM,
+    parsersJVM,
+    quasiquotesJVM,
+    scalametaJVM,
+    tokenizersJVM,
+    tokensJVM,
+    transversersJVM,
+    treesJVM
   )
 
-  lazy val common = Project(
+  lazy val common = CrossProject(
     id   = "common",
-    base = file("scalameta/common")
+    base = file("scalameta/common"),
+    crossType = CrossType.Full
+  ) jvmSettings (
+    jvmSharedSettings : _*
+  ) jsSettings(
+    jsSharedSettings : _*
   ) settings (
     publishableSettings: _*
   ) settings (
@@ -59,9 +67,17 @@ object build extends Build {
     enableMacros
   )
 
-  lazy val dialects = Project(
+  lazy val commonJS = common.js
+  lazy val commonJVM = common.jvm
+
+  lazy val dialects = CrossProject(
     id   = "dialects",
-    base = file("scalameta/dialects")
+    base = file("scalameta/dialects"),
+    crossType = CrossType.Full
+  ) jvmSettings (
+    jvmSharedSettings : _*
+  ) jsSettings(
+    jsSharedSettings : _*
   ) settings (
     publishableSettings: _*
   ) settings (
@@ -69,36 +85,68 @@ object build extends Build {
     enableMacros
   ) dependsOn (common)
 
-  lazy val inline = Project(
+  lazy val dialectsJS = dialects.js
+  lazy val dialectsJVM = dialects.jvm
+
+  lazy val inline = CrossProject(
     id   = "inline",
-    base = file("scalameta/inline")
+    base = file("scalameta/inline"),
+    crossType = CrossType.Full
+  ) jvmSettings (
+    jvmSharedSettings : _*
+  ) jsSettings(
+    jsSharedSettings : _*
   ) settings (
     publishableSettings: _*
   ) settings (
     description := "Scala.meta's APIs for new-style (\"inline\") macros"
   ) dependsOn (inputs)
 
-  lazy val inputs = Project(
+  lazy val inlineJS = inline.js
+  lazy val inlineJVM = inline.jvm
+
+  lazy val inputs = CrossProject(
     id   = "inputs",
-    base = file("scalameta/inputs")
+    base = file("scalameta/inputs"),
+    crossType = CrossType.Full
+  ) jvmSettings (
+    jvmSharedSettings : _*
+  ) jsSettings(
+    jsSharedSettings : _*
   ) settings (
     publishableSettings: _*
   ) settings (
     description := "Scala.meta's APIs for source code in textual format"
   ) dependsOn (common)
 
-  lazy val parsers = Project(
+  lazy val inputsJS = inputs.js
+  lazy val inputsJVM = inputs.jvm
+
+  lazy val parsers = CrossProject(
     id   = "parsers",
-    base = file("scalameta/parsers")
+    base = file("scalameta/parsers"),
+    crossType = CrossType.Full
+  ) jvmSettings (
+    jvmSharedSettings : _*
+  ) jsSettings(
+    jsSharedSettings : _*
   ) settings (
     publishableSettings: _*
   ) settings (
     description := "Scala.meta's API for parsing and its baseline implementation"
   ) dependsOn (common, dialects, inputs, tokens, tokenizers, trees)
 
-  lazy val quasiquotes = Project(
+  lazy val parsersJS = parsers.js
+  lazy val parsersJVM = parsers.jvm
+
+  lazy val quasiquotes = CrossProject(
     id   = "quasiquotes",
-    base = file("scalameta/quasiquotes")
+    base = file("scalameta/quasiquotes"),
+    crossType = CrossType.Full
+  ) jvmSettings (
+    jvmSharedSettings : _*
+  ) jsSettings(
+    jsSharedSettings : _*
   ) settings (
     publishableSettings: _*
   ) settings (
@@ -106,20 +154,39 @@ object build extends Build {
     enableHardcoreMacros
   ) dependsOn (common, dialects, inputs, trees, parsers)
 
-  lazy val tokenizers = Project(
+  lazy val quasiquotesJS = quasiquotes.js
+  lazy val quasiquotesJVM = quasiquotes.jvm
+
+  lazy val tokenizers = CrossProject(
     id   = "tokenizers",
-    base = file("scalameta/tokenizers")
+    base = file("scalameta/tokenizers"),
+    crossType = CrossType.Full
+  ) jvmSettings (
+    jvmSharedSettings : _*
+  ) jsSettings(
+    jsSharedSettings : _*
   ) settings (
     publishableSettings: _*
   ) settings (
     description := "Scala.meta's APIs for tokenization and its baseline implementation",
-    libraryDependencies += "com.lihaoyi" %% "scalaparse" % "0.3.7",
     enableMacros
-  ) dependsOn (common, dialects, inputs, tokens)
+  ) jvmSettings (
+    libraryDependencies += "com.lihaoyi" %% "scalaparse" % "0.3.7"
+  ) jsSettings (
+    libraryDependencies += "com.lihaoyi" %%% "scalaparse" % "0.3.7"
+  )dependsOn (common, dialects, inputs, tokens)
 
-  lazy val tokens = Project(
+  lazy val tokenizersJS = tokenizers.js
+  lazy val tokenizersJVM = tokenizers.jvm
+
+  lazy val tokens = CrossProject(
     id   = "tokens",
-    base = file("scalameta/tokens")
+    base = file("scalameta/tokens"),
+    crossType = CrossType.Full
+  ) jvmSettings (
+    jvmSharedSettings : _*
+  ) jsSettings(
+    jsSharedSettings : _*
   ) settings (
     publishableSettings: _*
   ) settings (
@@ -127,9 +194,17 @@ object build extends Build {
     enableMacros
   ) dependsOn (common, dialects, inputs)
 
-  lazy val transversers = Project(
+  lazy val tokensJS = tokens.js
+  lazy val tokensJVM = tokens.jvm
+
+  lazy val transversers = CrossProject(
     id   = "transversers",
-    base = file("scalameta/transversers")
+    base = file("scalameta/transversers"),
+    crossType = CrossType.Full
+  ) jvmSettings (
+    jvmSharedSettings : _*
+  ) jsSettings(
+    jsSharedSettings : _*
   ) settings (
     publishableSettings: _*
   ) settings (
@@ -137,10 +212,18 @@ object build extends Build {
     enableMacros
   ) dependsOn (common, trees)
 
-  lazy val trees = Project(
+  lazy val transversersJS = transversers.js
+  lazy val transversersJVM = transversers.jvm
+
+  lazy val trees = CrossProject(
     id   = "trees",
-    base = file("scalameta/trees")
-  ) settings (
+    base = file("scalameta/trees"),
+    crossType = CrossType.Full
+  ) jvmSettings (
+    jvmSharedSettings : _*
+  ) jsSettings(
+    jsSharedSettings : _*
+  )  settings (
     publishableSettings: _*
   ) settings (
     description := "Scala.meta's abstract syntax trees",
@@ -149,9 +232,17 @@ object build extends Build {
     enableMacros
   ) dependsOn (common, dialects, inputs, tokens, tokenizers) // NOTE: tokenizers needed for Tree.tokens when Tree.pos.isEmpty
 
-  lazy val scalameta = Project(
+  lazy val treesJS = trees.js
+  lazy val treesJVM = trees.jvm
+
+  lazy val scalameta = CrossProject(
     id   = "scalameta",
-    base = file("scalameta/scalameta")
+    base = file("scalameta/scalameta"),
+    crossType = CrossType.Full
+  ) jvmSettings (
+    jvmSharedSettings : _*
+  ) jsSettings(
+    jsSharedSettings : _*
   ) settings (
     publishableSettings: _*
   ) settings (
@@ -159,6 +250,9 @@ object build extends Build {
   ) settings (
     exposePaths("scalameta", Test): _*
   ) dependsOn (common, dialects, parsers, quasiquotes, tokenizers, transversers, trees, inline)
+
+  lazy val scalametaJS = scalameta.js
+  lazy val scalametaJVM = scalameta.jvm
 
   lazy val readme = scalatex.ScalatexReadme(
     projectId = "readme",
@@ -220,7 +314,7 @@ object build extends Build {
     publishLocal := {},
     publishLocalSigned := {},
     publishM2 := {}
-  ) dependsOn (scalameta)
+  ) dependsOn (scalametaJVM)
 
   lazy val sharedSettings = crossVersionSharedSources ++ Seq(
     scalaVersion := ScalaVersions.max,
@@ -231,8 +325,6 @@ object build extends Build {
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.sonatypeRepo("releases"),
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
-    libraryDependencies += "org.scalatest" %% "scalatest" % "2.1.3" % "test",
-    libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.11.3" % "test",
     publishMavenStyle := true,
     publishArtifact in Compile := false,
     publishArtifact in Test := false,
@@ -290,6 +382,16 @@ object build extends Build {
         </developer>
       </developers>
     )
+  )
+
+  lazy val jvmSharedSettings: Seq[sbt.Def.Setting[_]] = Seq (
+    libraryDependencies += "org.scalatest" %% "scalatest" % "2.1.3" % "test",
+    libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.11.3" % "test"
+  )
+
+  lazy val jsSharedSettings: Seq[sbt.Def.Setting[_]] = Seq (
+    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.0-M15" % "test",
+    libraryDependencies += "org.scalacheck" %%% "scalacheck" % "1.13.0" % "test"
   )
 
   lazy val publishableSettings = sharedSettings ++ Seq(

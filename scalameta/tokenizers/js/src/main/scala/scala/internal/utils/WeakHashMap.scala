@@ -23,21 +23,21 @@ object  WeakHashMap {
 
 }
 
-import js.annotation.JSBracketAccess
-
 @js.native
-sealed trait WeakMap[K <: AnyRef, V] extends js.Any {
+@js.annotation.JSName("WeakMap")
+class WeakMap[K <: AnyRef, V] extends js.Object {
 
-  @JSBracketAccess
+  def delete(key: K): Unit = js.native
+
+  def has(key: K): Boolean = js.native
+
   def get(key: K): V = js.native
 
-  @JSBracketAccess
   def set(key: K, value: V): Unit = js.native
-
 }
 
 object WeakMap {
-  def empty[K <: AnyRef, V]: WeakMap[K, V] = (new Object).asInstanceOf[WeakMap[K, V]]
+  def empty[K <: AnyRef, V]: WeakMap[K, V] = new WeakMap[K, V]()
 
   def apply[K <: AnyRef, V](): WeakMap[K, V] = empty[K, V]
 }

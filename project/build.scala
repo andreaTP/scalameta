@@ -28,7 +28,8 @@ object build extends Build {
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject,
     aggregate in test := false,
     test := {
-      //val runTests = (test in scalameta in Test).value
+      //To be re enabled
+      val runTests = (test in scalametaJVM in Test).value
       val runDocs = (run in readme in Compile).toTask(" --validate").value
     },
     publish := {
@@ -174,7 +175,7 @@ object build extends Build {
     libraryDependencies += "com.lihaoyi" %% "scalaparse" % "0.3.7"
   ) jsSettings (
     libraryDependencies += "com.lihaoyi" %%% "scalaparse" % "0.3.7"
-  )dependsOn (common, dialects, inputs, tokens)
+  ) dependsOn (common, dialects, inputs, tokens)
 
   lazy val tokenizersJS = tokenizers.js
   lazy val tokenizersJVM = tokenizers.jvm

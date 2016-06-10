@@ -13,6 +13,7 @@ import scala.meta.dialects.Metalevel
 import scala.meta.inputs._
 import scala.meta.tokens._
 import scala.meta.tokenizers._
+import scala.meta.internal.utils
 
 class ScalametaTokenizer(input: Input, dialect: Dialect) {
   def tokenize(): Tokens = {
@@ -20,7 +21,7 @@ class ScalametaTokenizer(input: Input, dialect: Dialect) {
     val miniCache = {
       var result = megaCache.get(dialect)
       if (result == null) {
-        val unsyncResult = mutable.WeakHashMap[Input, Tokens]()
+        val unsyncResult = utils.WeakHashMap[Input, Tokens]()
         val syncResult = megaCache.putIfAbsent(dialect, unsyncResult)
         result = if (syncResult != null) syncResult else unsyncResult
       }
@@ -252,7 +253,7 @@ class ScalametaTokenizer(input: Input, dialect: Dialect) {
 object ScalametaTokenizer {
   // NOTE: Manipulated by tokenization code in the ScalametaTokenizer class.
   // Caching just in toTokenize wouldn't be enough, because someone could call the tokenizer directly.
-  private val megaCache = new juc.ConcurrentHashMap[Dialect, mutable.WeakHashMap[Input, Tokens]]()
+  private val megaCache = new juc.ConcurrentHashMap[Dialect, utils.WeakHashMap[Input, Tokens]]()
   private val miniCacheSyncRoot = new Object
 
   def toTokenize: Tokenize = new Tokenize {

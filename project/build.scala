@@ -28,7 +28,6 @@ object build extends Build {
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject,
     aggregate in test := false,
     test := {
-      //To be re enabled
       val runTests = (test in scalametaJVM in Test).value
       val runDocs = (run in readme in Compile).toTask(" --validate").value
     },

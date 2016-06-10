@@ -38,7 +38,7 @@ class PublicSuite extends FunSuite {
     val tree = "foo + bar // baz".parse[Term].get
     assert(tree.show[Syntax] === "foo + bar // baz")
   }
-
+/*
   test("scala.meta.Tree.toString (quasiquotes)") {
     val tree = q"foo + bar // baz"
     assert(tree.toString === "foo + bar")
@@ -53,7 +53,7 @@ class PublicSuite extends FunSuite {
     val tree = q"foo + bar // baz"
     assert(tree.show[Syntax] === "foo + bar")
   }
-
+*/
   test("scala.meta.classifiers.Classifiable.toString") {
     // n/a
   }

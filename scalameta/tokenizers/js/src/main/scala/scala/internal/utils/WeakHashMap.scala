@@ -29,12 +29,6 @@ import js.annotation.JSBracketAccess
 sealed trait WeakMap[K <: AnyRef, V] extends js.Any {
 
   @JSBracketAccess
-  def delete(key: K): Unit = js.native
-
-  @JSBracketAccess
-  def has(key: K): Boolean = js.native
-
-  @JSBracketAccess
   def get(key: K): V = js.native
 
   @JSBracketAccess

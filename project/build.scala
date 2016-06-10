@@ -49,7 +49,18 @@ object build extends Build {
     tokenizersJVM,
     tokensJVM,
     transversersJVM,
-    treesJVM
+    treesJVM,
+    commonJS,
+    dialectsJS,
+    inlineJS,
+    inputsJS,
+    parsersJS,
+    quasiquotesJS,
+    scalametaJS,
+    tokenizersJS,
+    tokensJS,
+    transversersJS,
+    treesJS
   )
 
   lazy val common = CrossProject(

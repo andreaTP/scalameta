@@ -68,7 +68,7 @@ object Show {
   def apply[T](f: T => Result): Show[T] =
     new Show[T] { def apply(input: T): Result = f(input) }
 
-  def sequence[T](xs: T*): Result = macro scala.meta.internal.prettyprinters.ShowMacros.seq
+  def sequence[T](xs: T*): Result = ???//ShowHelper.sequence(xs)
 
   def indent[T](x: T)(implicit show: Show[T]): Result = Indent(show(x))
 
@@ -77,7 +77,7 @@ object Show {
 
   def newline[T](x: T)(implicit show: Show[T]): Result = Newline(show(x))
 
-  def meta[T](data: Any, xs: T*): Result = macro scala.meta.internal.prettyprinters.ShowMacros.meta
+  def meta[T](data: Any, xs: T*): Result = ???//ShowHelper.meta(data, xs)
 
   def wrap[T](x: T, suffix: String)(implicit show: Show[T]): Result = Wrap("", show(x), suffix, _.nonEmpty)
   def wrap[T](x: T, suffix: String, cond: Boolean)(implicit show: Show[T]): Result = Wrap("", show(x), suffix, _ => cond)

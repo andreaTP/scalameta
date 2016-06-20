@@ -10,4 +10,4 @@ addSbtPlugin("io.get-coursier" % "sbt-coursier-java-6" % "1.0.0-M11")
 
 addSbtPlugin("com.lihaoyi" % "scalatex-sbt-plugin" % "0.3.5")
 
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.9")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.10")

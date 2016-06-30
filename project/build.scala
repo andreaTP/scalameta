@@ -81,6 +81,18 @@ object build extends Build {
   lazy val commonJS = common.js
   lazy val commonJVM = common.jvm
 
+  lazy val commonMacros = Project(
+    id   = "commonMacros",
+    base = file("scalameta/commonMacros")
+  ) settings(
+    jvmSharedSettings : _*
+  ) settings (
+    publishableSettings: _*
+  ) settings (
+    description := "Bag of private and public helpers used in scala.meta's APIs and implementations",
+    enableMacros
+  ) dependsOn (commonJVM)
+
   lazy val dialects = CrossProject(
     id   = "dialects",
     base = file("scalameta/dialects"),
@@ -97,7 +109,7 @@ object build extends Build {
   ) dependsOn (common)
 
   lazy val dialectsJS = dialects.js
-  lazy val dialectsJVM = dialects.jvm
+  lazy val dialectsJVM = dialects.jvm.dependsOn(commonMacros % "provided")
 
   lazy val inline = CrossProject(
     id   = "inline",
@@ -111,10 +123,10 @@ object build extends Build {
     publishableSettings: _*
   ) settings (
     description := "Scala.meta's APIs for new-style (\"inline\") macros"
-  ) dependsOn (inputs)
+  ) dependsOn (common)
 
   lazy val inlineJS = inline.js
-  lazy val inlineJVM = inline.jvm
+  lazy val inlineJVM = inline.jvm.dependsOn(commonMacros % "provided")
 
   lazy val inputs = CrossProject(
     id   = "inputs",
@@ -131,7 +143,7 @@ object build extends Build {
   ) dependsOn (common)
 
   lazy val inputsJS = inputs.js
-  lazy val inputsJVM = inputs.jvm
+  lazy val inputsJVM = inputs.jvm.dependsOn(commonMacros % "provided")
 
   lazy val parsers = CrossProject(
     id   = "parsers",
@@ -148,7 +160,7 @@ object build extends Build {
   ) dependsOn (common, dialects, inputs, tokens, tokenizers, trees)
 
   lazy val parsersJS = parsers.js
-  lazy val parsersJVM = parsers.jvm
+  lazy val parsersJVM = parsers.jvm.dependsOn(commonMacros % "provided")
 
   lazy val quasiquotes = CrossProject(
     id   = "quasiquotes",
@@ -166,7 +178,7 @@ object build extends Build {
   ) dependsOn (common, dialects, inputs, trees, parsers)
 
   lazy val quasiquotesJS = quasiquotes.js
-  lazy val quasiquotesJVM = quasiquotes.jvm
+  lazy val quasiquotesJVM = quasiquotes.jvm.dependsOn(commonMacros % "provided")
 
   lazy val tokenizers = CrossProject(
     id   = "tokenizers",
@@ -188,7 +200,7 @@ object build extends Build {
   ) dependsOn (common, dialects, inputs, tokens)
 
   lazy val tokenizersJS = tokenizers.js
-  lazy val tokenizersJVM = tokenizers.jvm
+  lazy val tokenizersJVM = tokenizers.jvm.dependsOn(commonMacros % "provided")
 
   lazy val tokens = CrossProject(
     id   = "tokens",
@@ -206,7 +218,7 @@ object build extends Build {
   ) dependsOn (common, dialects, inputs)
 
   lazy val tokensJS = tokens.js
-  lazy val tokensJVM = tokens.jvm
+  lazy val tokensJVM = tokens.jvm.dependsOn(commonMacros % "provided")
 
   lazy val transversers = CrossProject(
     id   = "transversers",
@@ -224,7 +236,7 @@ object build extends Build {
   ) dependsOn (common, trees)
 
   lazy val transversersJS = transversers.js
-  lazy val transversersJVM = transversers.jvm
+  lazy val transversersJVM = transversers.jvm.dependsOn(commonMacros % "provided")
 
   lazy val trees = CrossProject(
     id   = "trees",
@@ -244,7 +256,7 @@ object build extends Build {
   ) dependsOn (common, dialects, inputs, tokens, tokenizers) // NOTE: tokenizers needed for Tree.tokens when Tree.pos.isEmpty
 
   lazy val treesJS = trees.js
-  lazy val treesJVM = trees.jvm
+  lazy val treesJVM = trees.jvm.dependsOn(commonMacros % "provided")
 
   lazy val scalameta = CrossProject(
     id   = "scalameta",
@@ -257,13 +269,14 @@ object build extends Build {
   ) settings (
     publishableSettings: _*
   ) settings (
-    description := "Scala.meta's metaprogramming APIs"
+    description := "Scala.meta's metaprogramming APIs",
+    libraryDependencies += "org.scalameta" %% "commonmacros" % "1.0.0-SNAPSHOT" % "provided"
   ) settings (
     exposePaths("scalameta", Test): _*
   ) dependsOn (common, dialects, parsers, quasiquotes, tokenizers, transversers, trees, inline)
 
   lazy val scalametaJS = scalameta.js
-  lazy val scalametaJVM = scalameta.jvm
+  lazy val scalametaJVM = scalameta.jvm.dependsOn(commonMacros % "provided")
 
   lazy val readme = scalatex.ScalatexReadme(
     projectId = "readme",
